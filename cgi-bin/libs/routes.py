@@ -30,19 +30,30 @@ class Routes:
        
     def init(self):
         jsonData = self.parse(self.body)
-        
-        
+        printer  = Printer(self.res)
 
-        printer = Printer(self.res)
+        if jsonData['tipo'] == 'z':
+            return printer.Z()
 
-        if jsonData['tipo'] == 'tique':
+        if jsonData['tipo'] == 'info':
+            return printer.infoImpresora()
+
+        elif jsonData['tipo'] == 'Tique':
            return printer.TiqueFiscal(jsonData)
             
-        elif jsonData['tipo'] == 'tique nota de debito':
+        elif jsonData['tipo'] == 'Tique nota de credito':
+           return printer.TiqueNotaCredito(jsonData)
+
+        elif jsonData['tipo'] == 'Tique nota de debito':
            return printer.TiqueNotaDebito(jsonData)
         
         elif jsonData['tipo'] == 'Factura A':
-            return 'ok'
+            print "Route Factura A"
+            return printer.FacturaA(jsonData)
+            
+        elif jsonData['tipo'] == 'Factura B':
+            print "Route Factura B"
+            return printer.FacturaB(jsonData)
             
         elif jsonData['tipo'] == 'Nota Factura A':
             return 'ok'
@@ -62,11 +73,11 @@ class Routes:
         elif jsonData['tipo'] == 'Factura M':
             return 'ok'
             
-        elif jsonData['tipo'] == 'Nota Factura M':
-            return 'ok'
+        elif jsonData['tipo'] == 'cancelar todo':
+            return printer.cancelarTodo(jsonData)
         
         else:
-            return self.res("fail",200)
+            return printer.Error()
             
   
             

@@ -9,6 +9,7 @@ import sys
 from ctypes import windll
 
 
+
 # -----------------------------------------------------------------------------
 # GLOBAL DEFINES AREA
 # -----------------------------------------------------------------------------
@@ -161,7 +162,7 @@ AFIP_CODIGO_FORMA_DE_PAGO_TRANSFERENCIA_NO_BANCARIA           =   24
 AFIP_CODIGO_FORMA_DE_PAGO_OTROS_MEDIOS_DE_PAGO                =   99
 
 
-
+PUERTO = "0"
 
 
 # -----------------------------------------------------------------------------
@@ -182,7 +183,7 @@ def dll_version():
   int_minor = c_int()
   error = Handle_HL.ConsultarVersionDll( str_version, str_version_max_len, byref(int_major), byref(int_minor) )
   print "DllVersion            : ",
-  print error
+  print printError(error)
   print "String Dll Version    : ",
   print str_version.value
   print "Major Dll Version     : ",
@@ -190,6 +191,36 @@ def dll_version():
   print "Minor Dll Version     : ",
   print int_minor.value
 
+
+def printError(codigo):
+  # get handle from DLL
+  Handle_HL = windll.LoadLibrary("EpsonFiscalInterface.dll")
+  # connect
+  Handle_HL.ConfigurarVelocidad( 9600 )
+  Handle_HL.ConfigurarPuerto( PUERTO )
+  error = Handle_HL.Conectar()
+  response = create_string_buffer( b'\000' * 200 )
+  error = Handle_HL.ConsultarDescripcionDeError(int(codigo),response,200)
+  return str(response.value)
+
+def tipoResponsable():
+  #title 
+  print "*** TIPO RESPONSABLE ***"
+
+  # get handle from DLL
+  Handle_HL = windll.LoadLibrary("EpsonFiscalInterface.dll")
+
+  # connect
+  Handle_HL.ConfigurarVelocidad( 9600 )
+  Handle_HL.ConfigurarPuerto( PUERTO )
+  error = Handle_HL.Conectar()
+  print "Connect                 : ",
+  print printError(error)
+
+  response = create_string_buffer( b'\000' * 100 )
+  error = Handle_HL.ConsultarTipoResponsabilidadAnteElIVA(response,100)
+  print "Tipo Responsabilidad        : " + str(response.value)
+  print "Error tipo responsabilidad  : " + str(error)
 
 # -----------------------------------------------------------------------------
 # Function: equipment_machine_version()
@@ -203,10 +234,10 @@ def equipment_machine_version():
 
   # connect
   Handle_HL.ConfigurarVelocidad( 9600 )
-  Handle_HL.ConfigurarPuerto( "0" )
+  Handle_HL.ConfigurarPuerto( PUERTO )
   error = Handle_HL.Conectar()
   print "Connect                 : ",
-  print error
+  print printError(error)
 
   # get dll version
   str_version_max_len = 100
@@ -215,7 +246,7 @@ def equipment_machine_version():
   int_minor = c_int()
   error = Handle_HL.ConsultarVersionEquipo( str_version, str_version_max_len, byref(int_major), byref(int_minor) )
   print "Machinne Version        : ",
-  print error
+  print printError(error)
   print "String Machinne Version : ",
   print str_version.value
   print "Major Machinne Version  : ",
@@ -226,12 +257,12 @@ def equipment_machine_version():
   # status
   error = Handle_HL.ConsultarEstadoDeConexion()
   print "Conexion Status         : ",
-  print error
+  print printError(error)
 
   # close port
   error = Handle_HL.Desconectar()
   print "Disconect               : ",
-  print error
+  print printError(error)
 
 
 # -----------------------------------------------------------------------------
@@ -247,38 +278,38 @@ def set_and_get_header_trailer():
 
   # connect
   Handle_HL.ConfigurarVelocidad( 9600 )
-  Handle_HL.ConfigurarPuerto( "0" )
+  Handle_HL.ConfigurarPuerto( PUERTO )
   error = Handle_HL.Conectar()
   print "Connect               : ",
-  print error
+  print printError(error)
 
 
   # set header #1
-  error = Handle_HL.EstablecerEncabezado( 1, "Nuevo Encabezado #1" )
+  error = Handle_HL.EstablecerEncabezado( 1, "" )
   print "Config Header Error   : ",
-  print error
+  print printError(error)
 
   # get header #1
   str_header1_max_len = 100
   str_header1 = create_string_buffer( b'\000' * str_header1_max_len )
   error = Handle_HL.ConsultarEncabezado( 1, str_header1, str_header1_max_len )
   print "Get Header Error      : ",
-  print error
+  print printError(error)
   print "Header #1 String      : ",
   print str_header1.value
 
 
   # set trailer #1
-  error = Handle_HL.EstablecerCola( 1, "Nueva Cola #1" )
+  error = Handle_HL.EstablecerCola( 1, "" )
   print "Config Trailer Error  : ",
-  print error
+  print printError(error)
 
   # get trailer #1
   str_trailer1_max_len = 100
   str_trailer1 = create_string_buffer( b'\000' * str_trailer1_max_len )
   error = Handle_HL.ConsultarCola( 1, str_trailer1, str_trailer1_max_len )
   print "Get Trailer Error     : ",
-  print error
+  print printError(error)
   print "Trailer #1 String     : ",
   print str_trailer1.value
 
@@ -286,7 +317,7 @@ def set_and_get_header_trailer():
   # close port
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
-  print error
+  print printError(error)
 
 
 # -----------------------------------------------------------------------------
@@ -301,29 +332,29 @@ def set_and_get_datetime():
 
   # connect
   Handle_HL.ConfigurarVelocidad( 9600 )
-  Handle_HL.ConfigurarPuerto( "0" )
+  Handle_HL.ConfigurarPuerto( PUERTO )
   error = Handle_HL.Conectar()
   print "Connect               : ",
-  print error
+  print printError(error)
 
   # get datetime
   str_datetime_max_len = 100
   str_datetime = create_string_buffer( b'\000' * str_datetime_max_len )
   error = Handle_HL.ConsultarFechaHora( str_datetime, str_datetime_max_len )
   print "Get Date & Time Error : ",
-  print error
+  print printError(error)
   print "Date & Time           : ",
   print str_datetime.value
 
   # set datetime (use the same value)
   error = Handle_HL.EstablecerFechaHora( str_datetime.value  )
   print "Set Date & Time Error : ",
-  print error
+  print printError(error)
 
   # close port
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
-  print error
+  print printError(error)
 
 
 # -----------------------------------------------------------------------------
@@ -339,17 +370,17 @@ def cancel_all():
 
   # connect
   Handle_HL.ConfigurarVelocidad( 9600 )
-  Handle_HL.ConfigurarPuerto( "0" )
+  Handle_HL.ConfigurarPuerto( PUERTO )
   error = Handle_HL.Conectar()
   print "Connect               : ",
-  print error
+  print printError(error)
 
   # get document number
   str_doc_number_max_len = 20
   str_doc_number = create_string_buffer( b'\000' * str_doc_number_max_len )
   error = Handle_HL.ConsultarNumeroComprobanteActual( str_doc_number, str_doc_number_max_len )
   print "Get Doc. Number Error : ",
-  print error
+  print printError(error)
   print "Doc Number            : ",
   print str_doc_number.value
 
@@ -358,24 +389,24 @@ def cancel_all():
   str_doc_type = create_string_buffer( b'\000' * str_doc_type_max_len )
   error = Handle_HL.ConsultarTipoComprobanteActual( str_doc_type, str_doc_type_max_len )
   print "Get Type Doc. Error   : ",
-  print error
+  print printError(error)
   print "Doc Type              : ",
   print str_doc_type.value
 
   # try cancel
   error = Handle_HL.Cancelar()
   print "Cancel                : ",
-  print error
+  print printError(error)
 
   # get last error
   error = Handle_HL.ConsultarUltimoError()
   print "Last Error            : ",
-  print error
+  print printError(error)
 
   # close port
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
-  print error
+  print printError(error)
 
 
 # -----------------------------------------------------------------------------
@@ -388,148 +419,56 @@ def print_X_and_Z():
 
   # connect
   Handle_HL.ConfigurarVelocidad( 9600 )
-  Handle_HL.ConfigurarPuerto( "0" )
+  Handle_HL.ConfigurarPuerto( PUERTO )
   error = Handle_HL.Conectar()
   print "Connect               : ",
-  print error
+  print printError(error)
   
   # print X
   error = Handle_HL.ImprimirCierreX()
   print "Closure Cashier       : ",
-  print error
+  print printError(error)
 
   # print Z
   error = Handle_HL.ImprimirCierreZ()
   print "Closure Day           : ",
-  print error
+  print printError(error)
 
   # close port
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
-  print error
+  print printError(error)
 
+  return { "status" : True }
 
-# -----------------------------------------------------------------------------
-# Function: ticket
-# -----------------------------------------------------------------------------
-def ticket(items,descuento,pagaCon,recargo):
-
-  #title 
-  print "*** TICKET ***"
+def print_Z():
 
   # get handle from DLL
   Handle_HL = windll.LoadLibrary("EpsonFiscalInterface.dll")
 
   # connect
   Handle_HL.ConfigurarVelocidad( 9600 )
-  Handle_HL.ConfigurarPuerto( "0" )
+  Handle_HL.ConfigurarPuerto( PUERTO )
   error = Handle_HL.Conectar()
   print "Connect               : ",
-  print error
+  print printError(error)
 
-  # try cancel all
-  error = Handle_HL.Cancelar()
-  print "Cancel                : ",
-  print error
+  # print Z
+  error = Handle_HL.ImprimirCierreZ()
+  print "Closure Day           : ",
+  print printError(error)
 
-  # open
-  error = Handle_HL.AbrirComprobante( ID_TIPO_COMPROBANTE_TIQUET )
-  print "Open                  : ",
-  print error
-
-  # get document number
-  str_doc_number_max_len = 20
-  str_doc_number = create_string_buffer( b'\000' * str_doc_number_max_len )
-  error = Handle_HL.ConsultarNumeroComprobanteActual( str_doc_number, str_doc_number_max_len )
-  print "Get Doc. Number Error : ",
-  print error
-  print "Doc Number            : ",
-  print str_doc_number.value
-
-
-  # load extra text descripcion
-  if False:
-    error = Handle_HL.CargarTextoExtra( "Descrip. Extra #1"  )
-    print "Extra Descript. #1    : ",
-    print error
-
-    error = Handle_HL.CargarTextoExtra( "Descrip. Extra #2"  )
-    print "Extra Descript. #2    : ",
-    print error
-    
-    error = Handle_HL.CargarTextoExtra( "Descrip. Extra #3"  )
-    print "Extra Descript. #3    : ",
-    print error
-
-    error = Handle_HL.CargarTextoExtra( "Descrip. Extra #4"  )
-    print "Extra Descript. #4    : ",
-    print error
-
-  # items
-  for i in range(0, len(items)):      
-    producto = items[i]['producto']
-    peso     = items[i]['peso']
-    precio   = items[i]['precio_con_iva']
-    error = Handle_HL.ImprimirItem( ID_MODIFICADOR_AGREGAR, str(producto), str(peso), str(precio), ID_TASA_IVA_21_00, ID_IMPUESTO_INTERNO_FIJO, "7.1234", ID_CODIGO_INTERNO, "CodigoInterno4567890123456789012345678901234567890", "", AFIP_CODIGO_UNIDAD_MEDIDA_KILOGRAMO )
-    print "Item                  : ",
-    print error
-
-
-  # subtotal
-  error = Handle_HL.ImprimirSubtotal()
-  print "Subtotal              : ",
-  print error
-
-  # get subtotal gross amount
-  str_subtotal_max_len = 20
-  str_subtotal = create_string_buffer( b'\000' * str_subtotal_max_len )
-  error = Handle_HL.ConsultarSubTotalBrutoComprobanteActual( str_subtotal, str_subtotal_max_len )
-  print "Get Subtotal Gross    : ",
-  print error
-  print "Subtotal Gross Amount : ",
-  print str_subtotal.value
-
-  # get subtotal gross amount
-  str_subtotal_max_len = 20
-  str_subtotal = create_string_buffer( b'\000' * str_subtotal_max_len )
-  error = Handle_HL.ConsultarSubTotalNetoComprobanteActual( str_subtotal, str_subtotal_max_len )
-  print "Get Subtotal Net      : ",
-  print error
-  print "Subtotal Net Amount   : ",
-  print str_subtotal.value
-
-  # global discount
-  error = Handle_HL.CargarAjuste( ID_MODIFICADOR_DESCUENTO, "Descuento", str(descuento), 0, "CodigoInterno4567890123456789012345678901234567890"  )
-  print "Discount              : ",
-  print error
-
-  # global uplift
-  error = Handle_HL.CargarAjuste( ID_MODIFICADOR_AJUSTE, "Recargo", str(recargo), 0, "CodigoInterno4567891123456789012345678901234567891"  )
-  print "Uplift                : ",
-  print error
-
-  # get document number
-  str_doc_number_max_len = 20
-  str_doc_number = create_string_buffer( b'\000' * str_doc_number_max_len )
-  error = Handle_HL.ConsultarNumeroComprobanteActual( str_doc_number, str_doc_number_max_len )
-  print "Get Doc. Number Error : ",
-  print error
-  print "Doc Number            : ",
-  print str_doc_number.value
-
-
-  # close
-  error = Handle_HL.CerrarComprobante()
-  print "Close                 : ",
-  print error
-
-  # disconect
+  # close port
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
-  print error
+  print printError(error)
 
-  return { "status" : True , "comprobante" : str_doc_number.value }
+  return { "status" : True }
 
+
+# -----------------------------------------------------------------------------
+# Function: ticket
+# -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
 # Function: ticket_from_ticket_invoice
@@ -544,28 +483,28 @@ def ticket_from_ticket_invoice():
 
   # connect
   Handle_HL.ConfigurarVelocidad( 9600 )
-  Handle_HL.ConfigurarPuerto( "0" )
+  Handle_HL.ConfigurarPuerto( PUERTO )
   error = Handle_HL.Conectar()
 
   print "Connect               : ",
-  print error
+  print printError(error)
 
   # try cancel
   error = Handle_HL.Cancelar()
   print "Cancel                : ",
-  print error
+  print printError(error)
 
   # open - without customer data previously loaded
   error = Handle_HL.AbrirComprobante( ID_TIPO_COMPROBANTE_TIQUE_FACTURA )
   print "Open                  : ",
-  print error
+  print printError(error)
 
   # get document number
   str_doc_number_max_len = 20
   str_doc_number = create_string_buffer( b'\000' * str_doc_number_max_len )
   error = Handle_HL.ConsultarNumeroComprobanteActual( str_doc_number, str_doc_number_max_len )
   print "Get Doc. Number Error : ",
-  print error
+  print printError(error)
   print "Doc Number            : ",
   print str_doc_number.value
 
@@ -574,48 +513,48 @@ def ticket_from_ticket_invoice():
   str_doc_type = create_string_buffer( b'\000' * str_doc_type_max_len )
   error = Handle_HL.ConsultarTipoComprobanteActual( str_doc_type, str_doc_type_max_len )
   print "Get Type Doc. Error   : ",
-  print error
+  print printError(error)
   print "Doc Type              : ",
   print str_doc_type.value
 
   # load extra text descripcion
   error = Handle_HL.CargarTextoExtra( "Descrip. Extra #1"  )
   print "Extra Descript. #1    : ",
-  print error
+  print printError(error)
 
   error = Handle_HL.CargarTextoExtra( "Descrip. Extra #2"  )
   print "Extra Descript. #2    : ",
-  print error
+  print printError(error)
 
   error = Handle_HL.CargarTextoExtra( "Descrip. Extra #3"  )
   print "Extra Descript. #3    : ",
-  print error
+  print printError(error)
 
   error = Handle_HL.CargarTextoExtra( "Descrip. Extra #4"  )
   print "Extra Descript. #4    : ",
-  print error
+  print printError(error)
 
   # item
   error = Handle_HL.ImprimirItem( ID_MODIFICADOR_AGREGAR, "Sardinas", "1", ".12", ID_TASA_IVA_21_00, ID_IMPUESTO_NINGUNO, "", ID_CODIGO_INTERNO, "CodigoInterno4567890123456789012345678901234567890", "", AFIP_CODIGO_UNIDAD_MEDIDA_KILOGRAMO )
   print "Item                  : ",
-  print error
+  print printError(error)
 
   # item 2
   error = Handle_HL.ImprimirItem( ID_MODIFICADOR_AGREGAR, "Banana (item2)", "10", "132.087", ID_TASA_IVA_21_00, ID_IMPUESTO_NINGUNO, "", ID_CODIGO_INTERNO, "CodigoInterno5555588999922255999999600000000000001", "", AFIP_CODIGO_UNIDAD_MEDIDA_KILOGRAMO )
   print "Item 2                : ",
-  print error
+  print printError(error)
   
   # subtotal
   error = Handle_HL.ImprimirSubtotal()
   print "Subtotal              : ",
-  print error
+  print printError(error)
 
   # get subtotal gross amount
   str_subtotal_max_len = 20
   str_subtotal = create_string_buffer( b'\000' * str_subtotal_max_len )
   error = Handle_HL.ConsultarSubTotalBrutoComprobanteActual( str_subtotal, str_subtotal_max_len )
   print "Get Subtotal Gross    : ",
-  print error
+  print printError(error)
   print "Subtotal Gross Amount : ",
   print str_subtotal.value
   
@@ -624,29 +563,29 @@ def ticket_from_ticket_invoice():
   str_subtotal = create_string_buffer( b'\000' * str_subtotal_max_len )
   error = Handle_HL.ConsultarSubTotalNetoComprobanteActual( str_subtotal, str_subtotal_max_len )
   print "Get Subtotal Net      : ",
-  print error
+  print printError(error)
   print "Subtotal Net Amount   : ",
   print str_subtotal.value
 
   # global discount
   error = Handle_HL.CargarAjuste( ID_MODIFICADOR_DESCUENTO, "Descuento global", "10.00", 0, "CodigoInterno4567890123456789012345678901234567890"  )
   print "Discount              : ",
-  print error
+  print printError(error)
 
   # global uplift
   error = Handle_HL.CargarAjuste( ID_MODIFICADOR_AJUSTE, "Recargo global", "90.00", 0, "CodigoInterno4567890122222222222225678901234567892"  )
   print "Uplift                : ",
-  print error
+  print printError(error)
 
   # close
   error = Handle_HL.CerrarComprobante()
   print "Close                 : ",
-  print error
+  print printError(error)
 
   # disconect
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
-  print error
+  print printError(error)
 
 
 # -----------------------------------------------------------------------------
@@ -662,35 +601,35 @@ def ticket_invoice():
 
   # connect
   Handle_HL.ConfigurarVelocidad( 9600 )
-  Handle_HL.ConfigurarPuerto( "0" )
+  Handle_HL.ConfigurarPuerto( PUERTO )
   error = Handle_HL.Conectar()
   print "Connect               : ",
-  print error
+  print printError(error)
 
   # cancel
   error = Handle_HL.Cancelar()
   print "Cancel                : ",
-  print error
+  print printError(error)
 
   # load customer data
   error = Handle_HL.CargarDatosCliente( "Nombre Comprador #1", "Nombre Comprador #2", "Domicilio Comprador #1", "Domicilio Comprador #2", "Domicilio Comprador #3", ID_TIPO_DOCUMENTO_CUIT, "24272242549", ID_RESPONSABILIDAD_IVA_RESPONSABLE_INSCRIPTO )
   print "Customer Data         : ",
-  print error
+  print printError(error)
 
   # load customer data
   error = Handle_HL.CargarComprobanteAsociado( "083-00001-00000027" )
   print "Customer Remit #1     : ",
-  print error
+  print printError(error)
 
   # load customer data
   error = Handle_HL.CargarComprobanteAsociado( "082-00003-01003020" )
   print "Customer Remit #2     : ",
-  print error
+  print printError(error)
 
   # open
   error = Handle_HL.AbrirComprobante( ID_TIPO_COMPROBANTE_TIQUE_FACTURA )
   print "Open                  : ",
-  print error
+  print printError(error)
 
   # fixed info
   send_fixed_invoice_body( Handle_HL )
@@ -698,19 +637,23 @@ def ticket_invoice():
   # close
   error = Handle_HL.CerrarComprobante()
   print "Close                 : ",
-  print error
+  print printError(error)
 
   # disconect
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
-  print error
+  print printError(error)
 
+
+# -----------------------------------------------------------------------------
+# Function: ticket_invoice_A
+# -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
 # Function: ticket_invoice_B
 # -----------------------------------------------------------------------------
-def ticket_invoice_B():
-
+def ticket_invoice_B(nombreComprador,descuento,tipoDocumento,documento,tipoResponsable,items):
+ 
   #title 
   print "*** TICKET INVOICE 'B' ***"
 
@@ -722,45 +665,42 @@ def ticket_invoice_B():
   Handle_HL.ConfigurarPuerto( "0" )
   error = Handle_HL.Conectar()
   print "Connect               : ",
-  print error
+  print printError(error)
 
   # cancel
   error = Handle_HL.Cancelar()
   print "Cancel                : ",
-  print error
+  print printError(error)
 
   # load customer data
-  error = Handle_HL.CargarDatosCliente( "Nombre Comprador #1", "Nombre Comprador #2", "Domicilio Comprador #1", "Domicilio Comprador #2", "Domicilio Comprador #3", ID_TIPO_DOCUMENTO_CUIT, "24272242549", ID_RESPONSABILIDAD_IVA_MONOTRIBUTISTA )
+  error = Handle_HL.CargarDatosCliente( str(nombreComprador), " ", " ", " ", " ", int(tipoDocumento), str(documento), ID_RESPONSABILIDAD_IVA_MONOTRIBUTISTA )
   print "Customer Data         : ",
-  print error
-
-  # load customer data
-  error = Handle_HL.CargarComprobanteAsociado( "083-00001-00000027" )
-  print "Customer Remit #1     : ",
-  print error
-
-  # load customer data
-  error = Handle_HL.CargarComprobanteAsociado( "082-00003-01003020" )
-  print "Customer Remit #2     : ",
-  print error
+  print printError(error)
 
   # open
   error = Handle_HL.AbrirComprobante( ID_TIPO_COMPROBANTE_TIQUE_FACTURA )
   print "Open                  : ",
-  print error
+  print printError(error)
 
   # fixed info
-  send_fixed_invoice_body( Handle_HL )
+  send_fixed_invoice_body( Handle_HL,items )
+
+  # global discount
+  error = Handle_HL.CargarAjuste( ID_MODIFICADOR_DESCUENTO, "Descuento", str(descuento), 0, "CodigoInterno4567890123456789012345678901234567890"  )
+  print "Discount              : ",
+  print printError(error)
+
+
 
   # close
   error = Handle_HL.CerrarComprobante()
   print "Close                 : ",
-  print error
+  print printError(error)
 
   # disconect
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
-  print error
+  print printError(error)
 
 
 # -----------------------------------------------------------------------------
@@ -776,35 +716,35 @@ def ticket_debit_note():
 
   # connect
   Handle_HL.ConfigurarVelocidad( 9600 )
-  Handle_HL.ConfigurarPuerto( "0" )
+  Handle_HL.ConfigurarPuerto( PUERTO )
   error = Handle_HL.Conectar()
   print "Connect               : ",
-  print error
+  print printError(error)
 
   # try cancel
   error = Handle_HL.Cancelar()
   print "Cancel                : ",
-  print error
+  print printError(error)
 
   # load customer data
   error = Handle_HL.CargarDatosCliente( "Nombre Comprador #1", "Nombre Comprador #2", "Domicilio Comprador #1", "Domicilio Comprador #2", "Domicilio Comprador #3", ID_TIPO_DOCUMENTO_CUIT, "24272242549", ID_RESPONSABILIDAD_IVA_RESPONSABLE_INSCRIPTO )
   print "Customer Data         : ",
-  print error
+  print printError(error)
 
   # load customer data
   error = Handle_HL.CargarComprobanteAsociado( "083-00001-00000027" )
   print "Customer Remit #1     : ",
-  print error
+  print printError(error)
 
   # load customer data
   error = Handle_HL.CargarComprobanteAsociado( "082-00003-01003020" )
   print "Customer Remit #2     : ",
-  print error
+  print printError(error)
 
   # open
   error = Handle_HL.AbrirComprobante( ID_TIPO_COMPROBANTE_TIQUE_NOTA_DE_DEBITO )
   print "Open                  : ",
-  print error
+  print printError(error)
 
   # fixed info
   send_fixed_invoice_body( Handle_HL )
@@ -812,12 +752,12 @@ def ticket_debit_note():
   # close
   error = Handle_HL.CerrarComprobante()
   print "Close                 : ",
-  print error
+  print printError(error)
 
   # disconect
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
-  print error
+  print printError(error)
 
 # -----------------------------------------------------------------------------
 # Function: ticket_debit_note_B
@@ -832,35 +772,35 @@ def ticket_debit_note_B():
 
   # connect
   Handle_HL.ConfigurarVelocidad( 9600 )
-  Handle_HL.ConfigurarPuerto( "0" )
+  Handle_HL.ConfigurarPuerto( PUERTO )
   error = Handle_HL.Conectar()
   print "Connect               : ",
-  print error
+  print printError(error)
 
   # try cancel
   error = Handle_HL.Cancelar()
   print "Cancel                : ",
-  print error
+  print printError(error)
 
   # load customer data
   error = Handle_HL.CargarDatosCliente( "Nombre Comprador #1", "Nombre Comprador #2", "Domicilio Comprador #1", "Domicilio Comprador #2", "Domicilio Comprador #3", ID_TIPO_DOCUMENTO_CUIT, "24272242549", ID_RESPONSABILIDAD_IVA_MONOTRIBUTISTA )
   print "Customer Data         : ",
-  print error
+  print printError(error)
 
   # load customer data
   error = Handle_HL.CargarComprobanteAsociado( "083-00001-00000027" )
   print "Customer Remit #1     : ",
-  print error
+  print printError(error)
 
   # load customer data
   error = Handle_HL.CargarComprobanteAsociado( "082-00003-01003020" )
   print "Customer Remit #2     : ",
-  print error
+  print printError(error)
 
   # open
   error = Handle_HL.AbrirComprobante( ID_TIPO_COMPROBANTE_TIQUE_NOTA_DE_DEBITO )
   print "Open                  : ",
-  print error
+  print printError(error)
 
   # fixed info
   send_fixed_invoice_body( Handle_HL )
@@ -868,18 +808,18 @@ def ticket_debit_note_B():
   # close
   error = Handle_HL.CerrarComprobante()
   print "Close                 : ",
-  print error
+  print printError(error)
 
   # disconect
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
-  print error
+  print printError(error)
 
 
 # -----------------------------------------------------------------------------
 # Function: ticket_credit_note
 # -----------------------------------------------------------------------------
-def ticket_credit_note():
+def ticket_credit_note(comprobante,tipoComprobante,items):
 
   #title 
   print "*** TICKET CREDIT NOTE ***"
@@ -889,54 +829,46 @@ def ticket_credit_note():
 
   # connect
   Handle_HL.ConfigurarVelocidad( 9600 )
-  Handle_HL.ConfigurarPuerto( "0" )
+  Handle_HL.ConfigurarPuerto( PUERTO )
   error = Handle_HL.Conectar()
   print "Connect               : ",
-  print error
+  print printError(error)
 
   # try cancel
   error = Handle_HL.Cancelar()
   print "Cancel                : ",
-  print error
+  print printError(error)
+
 
   # load customer data
-  error = Handle_HL.CargarDatosCliente( "Nombre Comprador #1", "Nombre Comprador #2", "Domicilio Comprador #1", "Domicilio Comprador #2", "Domicilio Comprador #3", ID_TIPO_DOCUMENTO_CUIT, "24272242549", ID_RESPONSABILIDAD_IVA_RESPONSABLE_INSCRIPTO )
+  error = Handle_HL.CargarDatosCliente( "CONSUMIDOR FINAL", " ", " ", " ", " ", ID_TIPO_DOCUMENTO_NINGUNO, "24272242549", ID_RESPONSABILIDAD_IVA_CONSUMIDOR_FINAL )
   print "Customer Data         : ",
-  print error
+  print printError(error)
 
   # load customer data
-  error = Handle_HL.CargarComprobanteAsociado( "081-0005-0007777" )
+  error = Handle_HL.CargarComprobanteAsociado( str(comprobante) )
   print "main source voucher   : ",
-  print error
-  
-  # load customer data
-  error = Handle_HL.CargarComprobanteAsociado( "083-00001-00000027" )
-  print "Customer Remit #1     : ",
-  print error
-
-  # load customer data
-  error = Handle_HL.CargarComprobanteAsociado( "082-00003-01003020" )
-  print "Customer Remit #2     : ",
-  print error
+  print printError(error)
 
   # open
-  error = Handle_HL.AbrirComprobante( ID_TIPO_COMPROBANTE_TIQUE_NOTA_DE_CREDITO )
+  error = Handle_HL.AbrirComprobante( int(tipoComprobante) )
   print "Open                  : ",
-  print error
+  print printError(error)
 
   # fixed info
-  send_fixed_invoice_body( Handle_HL )
+  send_fixed_invoice_body( Handle_HL , items )
 
   # close
   error = Handle_HL.CerrarComprobante()
   print "Close                 : ",
-  print error
+  print printError(error)
 
   # disconect
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
-  print error
+  print printError(error)
 
+  return { "status" : True , "tipo" : "tique nota de credito" }
 
 # -----------------------------------------------------------------------------
 # Function: ticket_credit_note_B
@@ -951,40 +883,40 @@ def ticket_credit_note_B():
 
   # connect
   Handle_HL.ConfigurarVelocidad( 9600 )
-  Handle_HL.ConfigurarPuerto( "0" )
+  Handle_HL.ConfigurarPuerto( PUERTO )
   error = Handle_HL.Conectar()
   print "Connect               : ",
-  print error
+  print printError(error)
 
   # try cancel
   error = Handle_HL.Cancelar()
   print "Cancel                : ",
-  print error
+  print printError(error)
 
   # load customer data
   error = Handle_HL.CargarDatosCliente( "Nombre Comprador #1", "Nombre Comprador #2", "Domicilio Comprador #1", "Domicilio Comprador #2", "Domicilio Comprador #3", ID_TIPO_DOCUMENTO_CUIT, "24272242549", ID_RESPONSABILIDAD_IVA_MONOTRIBUTISTA )
   print "Customer Data         : ",
-  print error
+  print printError(error)
 
   # load customer data
   error = Handle_HL.CargarComprobanteAsociado( "081-0005-0007777" )
   print "main source voucher   : ",
-  print error
+  print printError(error)
 
   # load customer data
   error = Handle_HL.CargarComprobanteAsociado( "083-00001-00000027" )
   print "Customer Remit #1     : ",
-  print error
+  print printError(error)
 
   # load customer data
   error = Handle_HL.CargarComprobanteAsociado( "082-00003-01003020" )
   print "Customer Remit #2     : ",
-  print error
+  print printError(error)
 
   # open
   error = Handle_HL.AbrirComprobante( ID_TIPO_COMPROBANTE_TIQUE_NOTA_DE_CREDITO )
   print "Open                  : ",
-  print error
+  print printError(error)
 
   # fixed info
   send_fixed_invoice_body( Handle_HL )
@@ -992,12 +924,12 @@ def ticket_credit_note_B():
   # close
   error = Handle_HL.CerrarComprobante()
   print "Close                 : ",
-  print error
+  print printError(error)
 
   # disconect
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
-  print error
+  print printError(error)
 
 
 # -----------------------------------------------------------------------------
@@ -1013,25 +945,25 @@ def download():
 
   # connect
   Handle_HL.ConfigurarVelocidad( 9600 )
-  Handle_HL.ConfigurarPuerto( "0" )
+  Handle_HL.ConfigurarPuerto( PUERTO )
   error = Handle_HL.Conectar()
   print "Connect               : ",
-  print error
+  print printError(error)
 
   # try cancel vouchers
   error = Handle_HL.Cancelar()
   print "Cancel voucher        : ",
-  print error
+  print printError(error)
 
   # download 
   error = Handle_HL.Descargar( "1", "1", "donwloads" )
   print "Download              : ",
-  print error
+  print printError(error)
 
   # disconect
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
-  print error
+  print printError(error)
 
 
 # -----------------------------------------------------------------------------
@@ -1047,48 +979,48 @@ def audit():
 
   # connect
   Handle_HL.ConfigurarVelocidad( 9600 )
-  Handle_HL.ConfigurarPuerto( "0" )
+  Handle_HL.ConfigurarPuerto( PUERTO )
   error = Handle_HL.Conectar()
   print "Connect               : ",
-  print error
+  print printError(error)
 
   # try cancel all
   error = Handle_HL.Cancelar()
   print "Cancel voucher        : ",
-  print error
+  print printError(error)
 
   # audit 
   error = Handle_HL.ImprimirAuditoria( ID_MODIFICADOR_AUDITORIA_DETALLADA, "1", "2" )
   print "Audit Detailed        : ",
-  print error
+  print printError(error)
 
   # try cancel all
   error = Handle_HL.Cancelar()
   print "Cancel Audit          : ",
-  print error
+  print printError(error)
 
   # audit 
   error = Handle_HL.ImprimirAuditoria( ID_MODIFICADOR_AUDITORIA_RESUMIDA, "1", "2" )
   print "Audit Summary         : ",
-  print error
+  print printError(error)
 
   # disconect
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
-  print error
+  print printError(error)
 
 
 # -----------------------------------------------------------------------------
-# Function: send_fixed_invoice_body
+# Function: send_fixed_invoice_body para facturar
 # -----------------------------------------------------------------------------
-def send_fixed_invoice_body( Handle_HL ):
+def send_fixed_invoice_body( Handle_HL , items ):
 
   # get document number
   str_doc_number_max_len = 20
   str_doc_number = create_string_buffer( b'\000' * str_doc_number_max_len )
   error = Handle_HL.ConsultarNumeroComprobanteActual( str_doc_number, str_doc_number_max_len )
   print "Get Doc. Number Error : ",
-  print error
+  print printError(error)
   print "Doc Number            : ",
   print str_doc_number.value
 
@@ -1097,90 +1029,30 @@ def send_fixed_invoice_body( Handle_HL ):
   str_doc_type = create_string_buffer( b'\000' * str_doc_type_max_len )
   error = Handle_HL.ConsultarTipoComprobanteActual( str_doc_type, str_doc_type_max_len )
   print "Get Type Doc. Error   : ",
-  print error
+  print printError(error)
   print "Doc Type              : ",
-  print str_doc_type.value
+  print str_doc_type.value 
 
-  # load extra text descripcion
-  error = Handle_HL.CargarTextoExtra( "Descrip. Extra #1"  )
-  print "Extra Descript. #1    : ",
-  print error
-
-  error = Handle_HL.CargarTextoExtra( "Descrip. Extra #2"  )
-  print "Extra Descript. #2    : ",
-  print error
-
-  error = Handle_HL.CargarTextoExtra( "Descrip. Extra #3"  )
-  print "Extra Descript. #3    : ",
-  print error
-
-  error = Handle_HL.CargarTextoExtra( "Descrip. Extra #4"  )
-  print "Extra Descript. #4    : ",
-  print error
-
-  # item  1  - new
-  error = Handle_HL.ImprimirItem( ID_MODIFICADOR_AGREGAR, "Sardinas", "1.0000", "100.0000", ID_TASA_IVA_21_00, ID_IMPUESTO_NINGUNO, "", ID_CODIGO_INTERNO, "CodigoInterno4567890123456789012345678901234567890", "", AFIP_CODIGO_UNIDAD_MEDIDA_KILOGRAMO )
-  print "Item                  : ",
-  print error
-
-  # load extra text descripcion  - annulation 
-  error = Handle_HL.CargarTextoExtra( "Descrip. Extra #1"  )
-  print "Extra Descript. #1 (A): ",
-  print error
-
-  error = Handle_HL.CargarTextoExtra( "Descrip. Extra #2"  )
-  print "Extra Descript. #2 (A): ",
-  print error
-
-  error = Handle_HL.CargarTextoExtra( "Descrip. Extra #3"  )
-  print "Extra Descript. #3 (A): ",
-  print error
-
-  error = Handle_HL.CargarTextoExtra( "Descrip. Extra #4"  )
-  print "Extra Descript. #4 (A): ",
-  print error
-
-  # item  1  - annulation
-  error = Handle_HL.ImprimirItem( ID_MODIFICADOR_ANULAR, "Sardinas", "1.0000", "100.0000", ID_TASA_IVA_21_00, ID_IMPUESTO_NINGUNO, "", ID_CODIGO_INTERNO, "CodigoInterno4567890123456789012345678901234567890", "", AFIP_CODIGO_UNIDAD_MEDIDA_KILOGRAMO )
-  print "Item 1 - Annulation   : ",
-  print error
-
-  # load extra text descripcion
-  error = Handle_HL.CargarTextoExtra( "Rodondos (item2)"  )
-  print "Extra Descript. #1    : ",
-  print error
-
-  # item  2
-  error = Handle_HL.ImprimirItem( ID_MODIFICADOR_AGREGAR, "Tomates (item2)", "1.0000", "100.0000", ID_TASA_IVA_21_00, ID_IMPUESTO_NINGUNO, "", ID_CODIGO_INTERNO, "CodigoInterno9999999999999999999999678901234567890", "", AFIP_CODIGO_UNIDAD_MEDIDA_KILOGRAMO )
-  print "Item 2                : ",
-  print error
-
-  # item  3 - new
-  error = Handle_HL.ImprimirItem( ID_MODIFICADOR_AGREGAR_ITEM_BONIFICACION, "Cerveza (item3)", "2.0000", "3.0000", ID_TASA_IVA_21_00, ID_IMPUESTO_NINGUNO, "", ID_CODIGO_INTERNO, "CodigoInterno8228888999922229999999678901234567890", "", AFIP_CODIGO_UNIDAD_MEDIDA_LITROS )
-  print "Item 3 - new          : ",
-  print error
-
-  # item  3 - annulation
-  error = Handle_HL.ImprimirItem( ID_MODIFICADOR_ANULAR_ITEM_BONIFICACION, "Cerveza (item3)", "2.0000", "3.0000", ID_TASA_IVA_21_00, ID_IMPUESTO_NINGUNO, "", ID_CODIGO_INTERNO, "CodigoInterno8228888999922229999999678901234567890", "", AFIP_CODIGO_UNIDAD_MEDIDA_LITROS )
-  print "Item 3 - Annulation   : ",
-  print error
-
-  # item  4 - new
-  error = Handle_HL.ImprimirItem( ID_MODIFICADOR_AGREGAR, "Banana (item4)", "1.0000", "2.3000", ID_TASA_IVA_10_50, ID_IMPUESTO_NINGUNO, "", ID_CODIGO_INTERNO, "CodigoInterno5555588999922255999999600000000000001", "", AFIP_CODIGO_UNIDAD_MEDIDA_KILOGRAMO )
-  print "Item 4 - new          : ",
-  print error
+  for i in range(0, len(items)):      
+    producto = str(items[i]['producto'])
+    peso     = str(items[i]['peso'])
+    precio   = str(items[i]['precio_con_iva'])
+    error    = Handle_HL.ImprimirItem( ID_MODIFICADOR_AGREGAR, producto, peso, precio, 2 , 2 , "0.12000000", ID_CODIGO_INTERNO, "CodigoInterno4567890123456789012345678901234567890", "", AFIP_CODIGO_UNIDAD_MEDIDA_KILOGRAMO )
+    print "Item                  : ",
+    print printError(error)
+    #print "producto: " + producto + " - peso: " + peso + " - precio: " + precio
 
   # subtotal
   error = Handle_HL.ImprimirSubtotal()
   print "Subtotal              : ",
-  print error
+  print printError(error)
 
   # get subtotal gross amount
   str_subtotal_max_len = 20
   str_subtotal = create_string_buffer( b'\000' * str_subtotal_max_len )
   error = Handle_HL.ConsultarSubTotalBrutoComprobanteActual( str_subtotal, str_subtotal_max_len )
   print "Get Subtotal Gross    : ",
-  print error
+  print printError(error)
   print "Subtotal Gross Amount : ",
   print str_subtotal.value
 
@@ -1189,54 +1061,99 @@ def send_fixed_invoice_body( Handle_HL ):
   str_subtotal = create_string_buffer( b'\000' * str_subtotal_max_len )
   error = Handle_HL.ConsultarSubTotalNetoComprobanteActual( str_subtotal, str_subtotal_max_len )
   print "Get Subtotal Net      : ",
-  print error
+  print printError(error)
   print "Subtotal Net Amount   : ",
   print str_subtotal.value
 
-  # global discount
-  error = Handle_HL.CargarAjuste( ID_MODIFICADOR_DESCUENTO, "Descuento global", "10.00", 0, "CodigoInterno4567890123456789012345678901234567890"  )
-  print "Discount              : ",
-  print error
 
-  # global uplift
-  error = Handle_HL.CargarAjuste( ID_MODIFICADOR_AJUSTE, "Recargo global", "90.00", 0, "CodigoInterno4567222222222229012222222201234567890"  )
-  print "Uplift                : ",
-  print error
+# -----------------------------------------------------------------------------
+# Function: send_fixed_invoice_body para nota de credito - debito
+# -----------------------------------------------------------------------------
+def send_fixed_invoice_body_note( Handle_HL , items ):
 
-  # other taxes 1
-  error = Handle_HL.CargarOtrosTributos( AFIP_CODIGO_OTROS_TRIBUTOS_PERCEPCION_DE_IVA, "Percepcion por Tasa de IVA", "10.00", ID_TASA_IVA_21_00 )
-  print "VAT perception        : ",
-  print error
+  # get document number
+  str_doc_number_max_len = 20
+  str_doc_number = create_string_buffer( b'\000' * str_doc_number_max_len )
+  error = Handle_HL.ConsultarNumeroComprobanteActual( str_doc_number, str_doc_number_max_len )
+  print "Get Doc. Number Error : ",
+  print printError(error)
+  print "Doc Number            : ",
+  print str_doc_number.value
 
-  # other taxes 2
-  error = Handle_HL.CargarOtrosTributos( AFIP_CODIGO_OTROS_TRIBUTOS_OTRAS_PERCEPCIONES, "Otra Percepcion", "5.00", ID_TASA_IVA_NINGUNO )
-  print "Other perception      : ",
-  print error
-  
-  # other taxes 3
-  error = Handle_HL.CargarOtrosTributos( AFIP_CODIGO_OTROS_TRIBUTOS_PERCEPCION_DE_INGRESOS_BRUTOS, "Percepcion de IIBB", "3.00", ID_TASA_IVA_NINGUNO )
-  print "Other perception      : ",
-  print error
+  # get document type
+  str_doc_type_max_len = 20
+  str_doc_type = create_string_buffer( b'\000' * str_doc_type_max_len )
+  error = Handle_HL.ConsultarTipoComprobanteActual( str_doc_type, str_doc_type_max_len )
+  print "Get Type Doc. Error   : ",
+  print printError(error)
+  print "Doc Type              : ",
+  print str_doc_type.value 
 
-  # payment 1  - new 
-  error = Handle_HL.CargarPago( ID_MODIFICADOR_AGREGAR, AFIP_CODIGO_FORMA_DE_PAGO_TARJETA_DE_CREDITO, 3, "300.00", "Cupones", "Descripcion Pago #1", "VISA -4857, ctas. 3 x $100", "Descripcion Extra #2" )
-  print "Payment 1 - new       : ",
-  print error
+  for i in range(0, len(items)):      
+    producto = str(items[i]['producto'])
+    peso     = str(items[i]['peso'])
+    precio   = str(items[i]['precio_con_iva'])
+    error    = Handle_HL.ImprimirItem( ID_MODIFICADOR_AGREGAR, producto, peso, precio, ID_TASA_IVA_21_00, ID_IMPUESTO_NINGUNO, "", ID_CODIGO_INTERNO, "CodigoInterno4567890123456789012345678901234567890", "", AFIP_CODIGO_UNIDAD_MEDIDA_KILOGRAMO )
+    print "Item                  : ",
+    print printError(error)
 
-  # payment 1  - annulation
-  error = Handle_HL.CargarPago( ID_MODIFICADOR_ANULAR, AFIP_CODIGO_FORMA_DE_PAGO_TARJETA_DE_CREDITO, 3, "300.00", "Cupones", "Descripcion Pago #1", "VISA -4857, ctas. 3 x $100", "Descripcion Extra #2" )
-  print "Payment 1 - annulation: ",
-  print error
+  for i in range(0, len(items)):      
+    producto = str(items[i]['producto'])
+    peso     = str(items[i]['peso'])
+    precio   = str(items[i]['precio_con_iva'])
 
-  # payment 2  - new
-  error = Handle_HL.CargarPago( ID_MODIFICADOR_AGREGAR, AFIP_CODIGO_FORMA_DE_PAGO_TRANSFERENCIA_BANCARIA, 0, "45.00", "Cupones", "Descripcion Pago ii", "CBU -878941494- Pago #2", "Descripcion Extra #2" )
-  print "Payment 2 - new       : ",
-  print error
+    error = Handle_HL.ImprimirItem( ID_MODIFICADOR_ANULAR, producto, peso, precio, ID_TASA_IVA_21_00, ID_IMPUESTO_NINGUNO, "", ID_CODIGO_INTERNO, "CodigoInterno4567890123456789012345678901234567890", "", AFIP_CODIGO_UNIDAD_MEDIDA_KILOGRAMO )
+    
+    #error = Handle_HL.ImprimirItem( ID_MODIFICADOR_ANULAR, str(producto), str(peso), str(precio), ID_TASA_IVA_21_00, ID_IMPUESTO_NINGUNO, "", ID_CODIGO_INTERNO, "CodigoInterno4567890123456789012345678901234567890", "", AFIP_CODIGO_UNIDAD_MEDIDA_KILOGRAMO )
+    print "Item                  : ",
+    print printError(error)
+ 
+  if False:
 
-  # payment 3  - new
-  error = Handle_HL.CargarPago( ID_MODIFICADOR_AGREGAR, AFIP_CODIGO_FORMA_DE_PAGO_TRANSFERENCIA_BANCARIA, 0, "25.00", "", "Descripcion Pago iii", "", "" )
-  print "Payment 3 - new       : ",
-  print error
+    #############################################################################################
+
+    # load extra text descripcion
+
+    # item  1  - new
+    error = Handle_HL.ImprimirItem( ID_MODIFICADOR_AGREGAR, "Sardinas", "1.0000", "100.0000", ID_TASA_IVA_21_00, ID_IMPUESTO_NINGUNO, "", ID_CODIGO_INTERNO, "CodigoInterno4567890123456789012345678901234567890", "", AFIP_CODIGO_UNIDAD_MEDIDA_KILOGRAMO )
+    print "Item                  : ",
+    print printError(error)
+
+    # load extra text descripcion  - annulation 
+
+
+    # item  1  - annulation
+    error = Handle_HL.ImprimirItem( ID_MODIFICADOR_ANULAR, "Sardinas", "1.0000", "100.0000", ID_TASA_IVA_21_00, ID_IMPUESTO_NINGUNO, "", ID_CODIGO_INTERNO, "CodigoInterno4567890123456789012345678901234567890", "", AFIP_CODIGO_UNIDAD_MEDIDA_KILOGRAMO )
+    print "Item 1 - Annulation   : ",
+    print printError(error)
+
+
+    #############################################################################################
+
+  # subtotal
+  error = Handle_HL.ImprimirSubtotal()
+  print "Subtotal              : ",
+  print printError(error)
+
+  # get subtotal gross amount
+  str_subtotal_max_len = 20
+  str_subtotal = create_string_buffer( b'\000' * str_subtotal_max_len )
+  error = Handle_HL.ConsultarSubTotalBrutoComprobanteActual( str_subtotal, str_subtotal_max_len )
+  print "Get Subtotal Gross    : ",
+  print printError(error)
+  print "Subtotal Gross Amount : ",
+  print str_subtotal.value
+
+  # get subtotal gross amount
+  str_subtotal_max_len = 20
+  str_subtotal = create_string_buffer( b'\000' * str_subtotal_max_len )
+  error = Handle_HL.ConsultarSubTotalNetoComprobanteActual( str_subtotal, str_subtotal_max_len )
+  print "Get Subtotal Net      : ",
+  print printError(error)
+  print "Subtotal Net Amount   : ",
+  print str_subtotal.value
+
+
 
 
 # -----------------------------------------------------------------------------
@@ -1249,15 +1166,15 @@ def connect():
 
   # connect
   Handle_HL.ConfigurarVelocidad( 9600 )
-  Handle_HL.ConfigurarPuerto( "0" )
+  Handle_HL.ConfigurarPuerto( PUERTO )
   error = Handle_HL.Conectar()
   print "Connect                 : ",
-  print error
+  print printError(error)
   
   # status
   error = Handle_HL.ConsultarEstadoDeConexion()
   print "Conexion Status         : ",
-  print error
+  print printError(error)
 
   Handle_HL.Cancelar()
 
