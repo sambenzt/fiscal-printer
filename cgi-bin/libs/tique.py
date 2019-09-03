@@ -18,7 +18,7 @@ ID_MODIFICADOR_AJUSTE                        = 401
 # -----------------------------------------------------------------------------
 # Function: ticket
 # -----------------------------------------------------------------------------
-def ticket(items,descuento,pagaCon,recargo):
+def ticket(items,descuento,pagaCon,recargo,formaPago,cuotas):
 
   #title 
   print "*** TICKET ***"
@@ -87,6 +87,34 @@ def ticket(items,descuento,pagaCon,recargo):
   print printError(error)
   print "Doc Number            : ",
   print str_doc_number.value
+
+
+  str_doc_number_max_len = 20
+  neto_actual = create_string_buffer( b'\000' * str_doc_number_max_len )
+  error = Handle_HL.ConsultarSubTotalNetoComprobanteActual( neto_actual, str_doc_number_max_len )
+  print "Get Neto Actual : ",
+  print printError(error)
+  print "Neto Actual           : ",
+  print neto_actual.value
+
+  ID_MODIFICADOR = 200
+  CODIGO_FORMA_PAGO = int(formaPago)
+  CANTIDAD_CUOTAS = int(cuotas)
+  MONTO = neto_actual.value
+  DESCRIPCION_CUPONES = ""
+  DESCRIPCION = "", 
+  DESCRIPCION_EXTRA1 = ""
+  DESCRIPCION_EXTRA2 = ""
+
+  if CODIGO_FORMA_PAGO != 20:
+     CANTIDAD_CUOTAS = 0
+
+
+  # cargar pago
+  error = Handle_HL.CargarPago( ID_MODIFICADOR , CODIGO_FORMA_PAGO , CANTIDAD_CUOTAS, MONTO , DESCRIPCION_CUPONES , "" , "" , "" )
+  print "Discount              : ",
+  print printError(error)
+
 
 
   # close

@@ -88,8 +88,10 @@ class Printer:
         descuento = jsonData['descuento']
         pagaCon   = jsonData['paga_con']
         recargo   = jsonData['recargo']
+        formaPago = jsonData['codigo_pago']
+        cuotas    = jsonData['cuotas']
 
-        return self.res({"printer" : ticket(items,descuento,pagaCon,recargo)},201)
+        return self.res({"printer" : ticket(items,descuento,pagaCon,recargo,formaPago,cuotas)},201)
 
     def TiqueNotaCredito(self,jsonData):
 
