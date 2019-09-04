@@ -1183,33 +1183,9 @@ def connect():
 def cancel():
   print "cancelando"
 
-if False:
+ticket_debit_note()
 
-  print " "
-  print " "
-  print "----Basic Test"
-  dll_version()
-  equipment_machine_version()
-  set_and_get_header_trailer()
-  set_and_get_datetime()
-  cancel_all()
-  print " "
-  print " "
-  print "----Testing Sales"
-  ticket()
-  ticket_from_ticket_invoice()
-  ticket_invoice()
-  ticket_invoice_B()
-  ticket_debit_note()
-  ticket_debit_note_B()
-  ticket_credit_note()
-  ticket_credit_note_B()
-  print " "
-  print " "
-  print "----Test Close Day"
-  print_X_and_Z()
-  audit()
-  download()
+
 
 
 

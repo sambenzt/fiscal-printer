@@ -3,6 +3,7 @@ from ctypes import windll
 import binascii
 
 from libs.factura_a import *
+from libs.factura_b import *
 from libs.tique import *
 from libs.cierre_z import *
 
@@ -104,35 +105,36 @@ class Printer:
         print "Tipo comprobante:" + str(tipoComprobante)
         return self.res({"printer":ticket_credit_note(comprobante,tipoComprobante,items)},200)
 
-    def TiqueNotaDebito(self,jsonData):
-        ticket_debit_note()
-
     def FacturaA(self,jsonData):
         
-        items            = jsonData['items']
-        descuento        = jsonData['descuento']
-        recargo          = jsonData['recargo']
-        nombreComprador  = jsonData['nombre_comprador']
-        direccion        = jsonData['direccion']
-        documento        = jsonData['documento']
+        items             = jsonData['items']
+        descuento         = jsonData['descuento']
+        recargo           = jsonData['recargo']
+        nombreComprador   = jsonData['nombre_comprador']
+        codigoResponsable = jsonData['codigo_responsable']
+        direccion         = jsonData['direccion']
+        documento         = jsonData['documento']
+        formaPago         = jsonData['codigo_pago']
+        cuotas            = jsonData['cuotas']
 
-        return self.res({"printer":ticket_invoice_A(nombreComprador,direccion,descuento,documento,items)},200)
+
+        return self.res({"printer":ticket_invoice_A(nombreComprador,direccion,descuento,documento,items,formaPago,cuotas)},200)
     
     def FacturaB(self,jsonData):
         
         # SOLO ADMITE CUIT!
 
-        items            = jsonData['items']
-        descuento        = jsonData['descuento']
-        recargo          = jsonData['recargo']
-        nombreComprador  = jsonData['nombre_comprador']
-        direccion        = jsonData['direccion']
-        documento        = jsonData['documento']
-        condicion        = jsonData['condicion']
+        items             = jsonData['items']
+        descuento         = jsonData['descuento']
+        recargo           = jsonData['recargo']
+        nombreComprador   = jsonData['nombre_comprador']
+        codigoResponsable = jsonData['codigo_responsable']
+        direccion         = jsonData['direccion']
+        documento         = jsonData['documento']
+        formaPago         = jsonData['codigo_pago']
+        cuotas            = jsonData['cuotas']
 
-        return self.res(condicion)
-
-        return self.res({"printer":ticket_invoice_B(nombreComprador,descuento,tipoDocumento,documento,tipoResponsable,items)},200)
+        return self.res({"printer":ticket_invoice_B(nombreComprador,codigoResponsable,direccion,descuento,documento,items,formaPago,cuotas)},200)
 
     def infoImpresora(self):
         equipment_machine_version()

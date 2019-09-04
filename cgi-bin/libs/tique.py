@@ -13,7 +13,6 @@ AFIP_CODIGO_UNIDAD_MEDIDA_KILOGRAMO          = 1
 ID_TASA_IVA                                  = 0 #funciona con 1 - 5 -
 ID_IMPUESTO_NINGUNO                          = 0
 ID_MODIFICADOR_DESCUENTO                     = 400
-ID_MODIFICADOR_AJUSTE                        = 401
 
 # -----------------------------------------------------------------------------
 # Function: ticket
@@ -37,6 +36,14 @@ def ticket(items,descuento,pagaCon,recargo,formaPago,cuotas):
   error = Handle_HL.Cancelar()
   print "Cancel                : ",
   print printError(error)
+
+  str_doc_number_max_len = 20
+  punto_venta = create_string_buffer( b'\000' * str_doc_number_max_len )
+  error = Handle_HL.ConsultarNumeroPuntoDeVenta( punto_venta, str_doc_number_max_len )
+  print "Punto de venta Error : ",
+  print printError(error)
+  print "Punto de venta       : ",
+  print punto_venta.value
 
   # open
   error = Handle_HL.AbrirComprobante( ID_TIPO_COMPROBANTE_TIQUET )
@@ -74,11 +81,6 @@ def ticket(items,descuento,pagaCon,recargo,formaPago,cuotas):
   print "Discount              : ",
   print printError(error)
 
-  # global uplift
-  # error = Handle_HL.CargarAjuste( ID_MODIFICADOR_AJUSTE, "Recargo", str(recargo), 0, "CodigoInterno4567891123456789012345678901234567891"  )
-  # print "Uplift                : ",
-  # print printError(error)
-
   # get document number
   str_doc_number_max_len = 20
   str_doc_number = create_string_buffer( b'\000' * str_doc_number_max_len )
@@ -107,7 +109,7 @@ def ticket(items,descuento,pagaCon,recargo,formaPago,cuotas):
   DESCRIPCION_EXTRA2 = ""
 
   if CODIGO_FORMA_PAGO != 20:
-     CANTIDAD_CUOTAS = 0
+    CANTIDAD_CUOTAS = 0
 
 
   # cargar pago
@@ -122,12 +124,13 @@ def ticket(items,descuento,pagaCon,recargo,formaPago,cuotas):
   print "Close                 : ",
   print printError(error)
 
+
   # disconect
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
   print printError(error)
 
-  return { "status" : True , "comprobante" : str_doc_number.value }
+  return { "status" : True ,"punto_venta" : punto_venta.value , "comprobante" : str_doc_number.value , "total" : MONTO , "codigo_pago" : CODIGO_FORMA_PAGO,  "cuotas" : CANTIDAD_CUOTAS , "descuento" : descuento }
 
 
 # -----------------------------------------------------------------------------

@@ -16,7 +16,7 @@ ID_MODIFICADOR_DESCUENTO                     = 400
 
 #todos los campos son obligatorios
 
-def ticket_invoice_A(nombreComprador,direccion,descuento,documento,items):
+def ticket_invoice_A(nombreComprador,direccion,descuento,documento,items,formaPago,cuotas):
 
 
   #title 
@@ -37,6 +37,15 @@ def ticket_invoice_A(nombreComprador,direccion,descuento,documento,items):
   print "Cancel                : ",
   print error
 
+  # get document number
+  str_doc_number_max_len = 20
+  punto_venta = create_string_buffer( b'\000' * str_doc_number_max_len )
+  error = Handle_HL.ConsultarNumeroPuntoDeVenta( punto_venta, str_doc_number_max_len )
+  print "Punto de venta Error : ",
+  print printError(error)
+  print "Punto de venta       : ",
+  print punto_venta.value
+
   # load customer data
   error = Handle_HL.CargarDatosCliente( str(nombreComprador), "",str(direccion), "", "", ID_TIPO_DOCUMENTO_CUIT, str(documento), ID_RESPONSABILIDAD_IVA_RESPONSABLE_INSCRIPTO )
   print "Customer Data         : ",
@@ -54,6 +63,41 @@ def ticket_invoice_A(nombreComprador,direccion,descuento,documento,items):
   print "Discount              : ",
   print error
 
+  # get document number
+  str_doc_number_max_len = 20
+  str_doc_number = create_string_buffer( b'\000' * str_doc_number_max_len )
+  error = Handle_HL.ConsultarNumeroComprobanteActual( str_doc_number, str_doc_number_max_len )
+  print "Get Doc. Number Error : ",
+  print printError(error)
+  print "Doc Number            : ",
+  print str_doc_number.value
+
+  str_doc_number_max_len = 20
+  neto_actual = create_string_buffer( b'\000' * str_doc_number_max_len )
+  error = Handle_HL.ConsultarSubTotalNetoComprobanteActual( neto_actual, str_doc_number_max_len )
+  print "Get Neto Actual : ",
+  print printError(error)
+  print "Neto Actual           : ",
+  print neto_actual.value
+
+  ID_MODIFICADOR = 200
+  CODIGO_FORMA_PAGO = int(formaPago)
+  CANTIDAD_CUOTAS = int(cuotas)
+  MONTO = neto_actual.value
+  DESCRIPCION_CUPONES = ""
+  DESCRIPCION = "", 
+  DESCRIPCION_EXTRA1 = ""
+  DESCRIPCION_EXTRA2 = ""
+
+  if CODIGO_FORMA_PAGO != 20:
+    CANTIDAD_CUOTAS = 0
+
+
+  # cargar pago
+  error = Handle_HL.CargarPago( ID_MODIFICADOR , CODIGO_FORMA_PAGO , CANTIDAD_CUOTAS, MONTO , DESCRIPCION_CUPONES , "" , "" , "" )
+  print "Discount              : ",
+  print printError(error)
+
   # close
   error = Handle_HL.CerrarComprobante()
   print "Close                 : ",
@@ -63,6 +107,8 @@ def ticket_invoice_A(nombreComprador,direccion,descuento,documento,items):
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
   print error
+
+  return { "status" : True, "punto_venta" : punto_venta.value , "comprobante" : str_doc_number.value , "total" : MONTO , "codigo_pago" : CODIGO_FORMA_PAGO,  "cuotas" : CANTIDAD_CUOTAS , "descuento" : descuento }
 
 # -----------------------------------------------------------------------------
 # Function: send_fixed_invoice_body para facturar
@@ -135,4 +181,7 @@ def printError(codigo):
   response = create_string_buffer( b'\000' * 200 )
   error = Handle_HL.ConsultarDescripcionDeError(int(codigo),response,200)
   return str(response.value)
+
+
+
 

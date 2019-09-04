@@ -58,9 +58,6 @@ class Routes:
         elif jsonData['tipo'] == 'Nota Factura A':
             return 'ok'
             
-        elif jsonData['tipo'] == 'Factura B':
-            return 'ok'
-            
         elif jsonData['tipo'] == 'Nota Factura B':
             return 'ok'
             
@@ -70,12 +67,6 @@ class Routes:
         elif jsonData['tipo'] == 'Nota Factura C':
             return 'ok'
             
-        elif jsonData['tipo'] == 'Factura M':
-            return 'ok'
-            
-        elif jsonData['tipo'] == 'cancelar todo':
-            return printer.cancelarTodo(jsonData)
-        
         else:
             return printer.Error()
             
