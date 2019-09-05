@@ -37,7 +37,6 @@ def ticket_invoice_A(nombreComprador,direccion,descuento,documento,items,formaPa
   print "Cancel                : ",
   print error
 
-  # get document number
   str_doc_number_max_len = 20
   punto_venta = create_string_buffer( b'\000' * str_doc_number_max_len )
   error = Handle_HL.ConsultarNumeroPuntoDeVenta( punto_venta, str_doc_number_max_len )
@@ -72,22 +71,16 @@ def ticket_invoice_A(nombreComprador,direccion,descuento,documento,items,formaPa
   print "Doc Number            : ",
   print str_doc_number.value
 
-  str_doc_number_max_len = 20
-  neto_actual = create_string_buffer( b'\000' * str_doc_number_max_len )
-  error = Handle_HL.ConsultarSubTotalNetoComprobanteActual( neto_actual, str_doc_number_max_len )
-  print "Get Neto Actual : ",
-  print printError(error)
-  print "Neto Actual           : ",
-  print neto_actual.value
-
-  ID_MODIFICADOR = 200
-  CODIGO_FORMA_PAGO = int(formaPago)
-  CANTIDAD_CUOTAS = int(cuotas)
-  MONTO = neto_actual.value
+  alic = alicuotas(items,descuento,True)
+ 
+  ID_MODIFICADOR      = 200
+  CODIGO_FORMA_PAGO   = int(formaPago)
+  CANTIDAD_CUOTAS     = int(cuotas)
+  MONTO               = str(alic['total'])
   DESCRIPCION_CUPONES = ""
-  DESCRIPCION = "", 
-  DESCRIPCION_EXTRA1 = ""
-  DESCRIPCION_EXTRA2 = ""
+  DESCRIPCION         = "", 
+  DESCRIPCION_EXTRA1  = ""
+  DESCRIPCION_EXTRA2  = ""
 
   if CODIGO_FORMA_PAGO != 20:
     CANTIDAD_CUOTAS = 0
@@ -108,7 +101,7 @@ def ticket_invoice_A(nombreComprador,direccion,descuento,documento,items,formaPa
   print "Disconect             : ",
   print error
 
-  return { "status" : True, "punto_venta" : punto_venta.value , "comprobante" : str_doc_number.value , "total" : MONTO , "codigo_pago" : CODIGO_FORMA_PAGO,  "cuotas" : CANTIDAD_CUOTAS , "descuento" : descuento }
+  return { "status" : True, "punto_venta" : punto_venta.value , "comprobante" : str_doc_number.value , "codigo_pago" : CODIGO_FORMA_PAGO,  "cuotas" : CANTIDAD_CUOTAS , "descuento" : descuento,  "alicuotas" : alic }
 
 # -----------------------------------------------------------------------------
 # Function: send_fixed_invoice_body para facturar
@@ -166,7 +159,75 @@ def send_fixed_invoice_body( Handle_HL , items ):
   print "Subtotal Net Amount   : ",
   print str_subtotal.value
 
+# -----------------------------------------------------------------------------
+# Function: alicuotas
+# -----------------------------------------------------------------------------
 
+def alicuotas(items,descuento,consola):
+   
+    importe_1050 = 0 
+    importe_2100 = 0 
+    importe_0000 = 0
+
+    for i in range(0, len(items)):      
+        producto       = str(items[i]['producto'])
+        peso           = str(items[i]['peso'])
+        precio         = str(items[i]['precio_sin_iva'])
+        precio_con_iva = round(float(precio) * (1 + float(items[i]['iva']) / 100),2)
+        iva            = float((items[i]['iva']))
+        importe        = round(float(peso) * float(precio),2)
+
+        if(iva == 10.50):
+            importe_1050 = importe_1050 + importe
+        elif(iva == 21):
+            importe_2100 = importe_2100 + importe
+        elif(iva == 0):
+            importe_0000 = importe_0000 + importe
+        #print "Item                  : " + producto + " importe " + str(importe)
+ 
+    subtotal         = importe_0000 + importe_1050 + importe_2100
+    descuento_0000   = round(descuento * importe_0000 / subtotal,2)
+    descuento_1050   = round(descuento * importe_1050 / subtotal,2)
+    descuento_2100   = round(descuento * importe_2100 / subtotal,2)
+    gravado_0000_dto = importe_0000 - descuento_0000
+    gravado_1050_dto = importe_1050 - descuento_1050
+    gravado_2100_dto = importe_2100 - descuento_2100
+    alicuota_0000    = round((importe_0000 - descuento_0000) * 0/100,2)
+    alicuota_2100    = round((importe_2100 - descuento_2100) * 21/100,2)
+    alicuota_1050    = round((importe_1050 - descuento_1050) * 10.5/100,2)
+    subtotal_neto    = gravado_1050_dto + gravado_2100_dto
+    total            = round(gravado_0000_dto,2) +  round(gravado_1050_dto,2) + round(gravado_2100_dto,2) + round(alicuota_0000,2) + round(alicuota_1050,2) + round(alicuota_2100,2)
+
+    if consola:
+        print ""
+        print "*****************************************************"
+        print "DESCUENTO:........................." + str(descuento)
+        print ""
+        print "GRAVADO (0.00):...................." + str(importe_0000)
+        print "GRAVADO (21.00):..................." + str(importe_2100)
+        print "GRAVADO (10.50):..................." + str(importe_1050)
+        print ""
+        print "SUBTOTAL:.........................." + str(subtotal)
+        print ""
+        print "DTO (0.00):........................-" + str(descuento_0000)
+        print "DTO (21.00):.......................-" + str(descuento_2100)
+        print "DTO (10.50):.......................-" + str(descuento_1050)
+        print ""
+        print "GRAVADO - DTO (0.00):..............." + str(gravado_0000_dto)
+        print "GRAVADO - DTO (21.00):.............." + str(gravado_2100_dto)
+        print "GRAVADO - DTO (10.50):.............." + str(gravado_1050_dto)
+        print ""
+        print "SUBTOTAL EXENTO:...................." + str(gravado_0000_dto)
+        print "SUBTOTAL NETO GRAVADO:.............." + str(subtotal_neto)
+        print "ALICUOTA (0.00):...................." + str(alicuota_0000)
+        print "ALICUOTA (21.00):..................." + str(alicuota_2100)
+        print "ALICUOTA (10.50):..................." + str(alicuota_1050)
+        print "TOTAL:.............................." + str(total)
+        print "*****************************************************"
+        print ""
+
+    return {"gravado_0000" : round(gravado_0000_dto,2) , "gravado_1050" : round(gravado_1050_dto,2) , "gravado_2100" : round(gravado_2100_dto,2), "alicuota_0000" : round(alicuota_0000,2) ,"alicuota_1050" : round(alicuota_1050,2) , "alicuota_2100" : round(alicuota_2100,2) , "total" : total}
+    
 # -----------------------------------------------------------------------------
 # Function: printError
 # -----------------------------------------------------------------------------
