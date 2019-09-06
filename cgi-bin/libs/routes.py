@@ -44,9 +44,6 @@ class Routes:
         elif jsonData['tipo'] == 'Tique nota de credito':
            return printer.TiqueNotaCredito(jsonData)
 
-        elif jsonData['tipo'] == 'Tique nota de debito':
-           return printer.TiqueNotaDebito(jsonData)
-        
         elif jsonData['tipo'] == 'Factura A':
             print "Route Factura A"
             return printer.FacturaA(jsonData)
@@ -55,20 +52,14 @@ class Routes:
             print "Route Factura B"
             return printer.FacturaB(jsonData)
             
-        elif jsonData['tipo'] == 'Nota Factura A':
-            return 'ok'
+        elif jsonData['tipo'] == 'Factura A nota de credito':
+            return printer.FacturaANotaCredito(jsonData)
             
-        elif jsonData['tipo'] == 'Nota Factura B':
-            return 'ok'
-            
-        elif jsonData['tipo'] == 'Factura C':
-            return 'ok'
-            
-        elif jsonData['tipo'] == 'Nota Factura C':
-            return 'ok'
+        elif jsonData['tipo'] == 'Factura B nota de credito':
+            return printer.FacturaBNotaCredito(jsonData)
             
         else:
-            return printer.Error()
+            return res('ninguna',404)
             
   
             
