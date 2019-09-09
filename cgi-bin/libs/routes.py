@@ -35,7 +35,7 @@ class Routes:
         if jsonData['tipo'] == 'z':
             return printer.Z()
 
-        if jsonData['tipo'] == 'info':
+        elif jsonData['tipo'] == 'info':
             return printer.infoImpresora()
 
         elif jsonData['tipo'] == 'Tique':
@@ -57,9 +57,9 @@ class Routes:
             
         elif jsonData['tipo'] == 'Factura B nota de credito':
             return printer.FacturaBNotaCredito(jsonData)
-            
+
         else:
-            return res('ninguna',404)
+            return res('no se encontro el tipo',404)
             
   
             

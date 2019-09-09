@@ -37,6 +37,14 @@ def ticket_invoice_B(nombreComprador,codigoResponsable,direccion,descuento,docum
   print "Cancel                : ",
   print printError(error)
 
+  str_date_len = 20
+  fecha = create_string_buffer( b'\000' * str_date_len )
+  error = Handle_HL.ConsultarFechaHora( fecha, str_date_len )
+  print "Fecha Impresora       : ",
+  print printError(error)
+  print "Fecha                 : ",
+  print parse_date(fecha.value)
+
   str_doc_number_max_len = 20
   punto_venta = create_string_buffer( b'\000' * str_doc_number_max_len )
   error = Handle_HL.ConsultarNumeroPuntoDeVenta( punto_venta, str_doc_number_max_len )
@@ -108,7 +116,7 @@ def ticket_invoice_B(nombreComprador,codigoResponsable,direccion,descuento,docum
   print "Disconect             : ",
   print printError(error)
 
-  return { "status" : True , "punto_venta" : punto_venta.value , "comprobante" : str_doc_number.value , "codigo_pago" : CODIGO_FORMA_PAGO,  "cuotas" : CANTIDAD_CUOTAS , "descuento" : descuento , "alicuotas" : alic }
+  return { "status" : True ,"fecha" : parse_date(fecha.value), "punto_venta" : punto_venta.value , "comprobante" : str_doc_number.value , "codigo_pago" : CODIGO_FORMA_PAGO,  "cuotas" : CANTIDAD_CUOTAS , "descuento" : descuento , "alicuotas" : alic }
 
 
 # -----------------------------------------------------------------------------
@@ -236,7 +244,7 @@ def alicuotas(items,descuento,consola):
         print "TOTAL:.............................." + str(total)
         print ""
 
-    return {"gravado_0000" : round(gravado_0000_dto,2) , "gravado_1050" : round(gravado_1050_dto,2) , "gravado_2100" : round(gravado_2100_dto,2), "alicuota_0000" : round(alicuota_0000,2) ,"alicuota_1050" : round(alicuota_1050,2) , "alicuota_2100" : round(alicuota_2100,2) , "total" : total}
+    return {"gravado_0000" : round(gravado_0000_dto,2) , "gravado_1050" : round(gravado_1050_dto,2) , "gravado_2100" : round(gravado_2100_dto,2), "alicuota_0000" : round(alicuota_0000,2) ,"alicuota_1050" : round(alicuota_1050,2) , "alicuota_2100" : round(alicuota_2100,2) , "total" : round(total,2)}
    
       
 # -----------------------------------------------------------------------------
@@ -253,4 +261,12 @@ def printError(codigo):
   response = create_string_buffer( b'\000' * 200 )
   error = Handle_HL.ConsultarDescripcionDeError(int(codigo),response,200)
   return str(response.value)
+
+def parse_date(fecha):
+    lfecha = list(fecha)
+    dia    = str(lfecha[0]) + str(lfecha[1])
+    mes    = str(lfecha[2]) + str(lfecha[3])
+    hora   = str(lfecha[7]) + str(lfecha[8]) + ':' + str(lfecha[9]) + str(lfecha[10]) + ':' + str(lfecha[11]) + str(lfecha[12])
+    return  '20' + str(lfecha[4]) + str(lfecha[5]) + '-' + mes + '-' + dia + ' ' + hora
+
 

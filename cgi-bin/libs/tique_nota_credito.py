@@ -49,6 +49,13 @@ def ticket_credit_note(punto_venta,comprobante,descuento,items):
   print "Cancel                : ",
   print printError(error)
 
+  str_date_len = 20
+  fecha = create_string_buffer( b'\000' * str_date_len )
+  error = Handle_HL.ConsultarFechaHora( fecha, str_date_len )
+  print "Fecha Impresora       : ",
+  print printError(error)
+  print "Fecha                 : ",
+  print parse_date(fecha.value)
 
   # load customer data
   error = Handle_HL.CargarDatosCliente( "CONSUMIDOR FINAL", " ", " ", " ", " ", ID_TIPO_DOCUMENTO_NINGUNO, "0", ID_RESPONSABILIDAD_IVA_CONSUMIDOR_FINAL )
@@ -56,6 +63,7 @@ def ticket_credit_note(punto_venta,comprobante,descuento,items):
   print printError(error)
 
   # load customer data
+  print "Comprobante asociado  :" +  "110-" + str(punto_venta) + "-" + str(comprobanteAsociado)
   error = Handle_HL.CargarComprobanteAsociado( "110-" + str(punto_venta) + "-" + str(comprobante) )
   print "main source voucher   : ",
   print printError(error)
@@ -73,6 +81,15 @@ def ticket_credit_note(punto_venta,comprobante,descuento,items):
   print "Discount              : ",
   print printError(error)
 
+  # get document number
+  str_doc_number_max_len = 20
+  str_doc_number = create_string_buffer( b'\000' * str_doc_number_max_len )
+  error = Handle_HL.ConsultarNumeroComprobanteActual( str_doc_number, str_doc_number_max_len )
+  print "Get Doc. Number Error : ",
+  print printError(error)
+  print "Doc Number            : ",
+  print str_doc_number.value
+
   # close
   error = Handle_HL.CerrarComprobante()
   print "Close                 : ",
@@ -83,8 +100,8 @@ def ticket_credit_note(punto_venta,comprobante,descuento,items):
   print "Disconect             : ",
   print printError(error)
 
-  return { "status" : True , "tipo" : "tique nota de credito" }
-
+  return { "status" : True, "fecha" : parse_date(fecha.value),  "tipo" : "tique nota de credito" , "punto_venta" : punto_venta , "comprobante" : str_doc_number.value  }
+ 
 
 # -----------------------------------------------------------------------------
 # Function: send_fixed_invoice_body para nota de credito - debito
@@ -156,4 +173,12 @@ def printError(codigo):
   response = create_string_buffer( b'\000' * 200 )
   error = Handle_HL.ConsultarDescripcionDeError(int(codigo),response,200)
   return str(response.value)
+
+def parse_date(fecha):
+    lfecha = list(fecha)
+    dia    = str(lfecha[0]) + str(lfecha[1])
+    mes    = str(lfecha[2]) + str(lfecha[3])
+    hora   = str(lfecha[7]) + str(lfecha[8]) + ':' + str(lfecha[9]) + str(lfecha[10]) + ':' + str(lfecha[11]) + str(lfecha[12])
+    return  '20' + str(lfecha[4]) + str(lfecha[5]) + '-' + mes + '-' + dia + ' ' + hora
+
 
