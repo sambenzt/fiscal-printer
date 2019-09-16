@@ -86,12 +86,11 @@ def ticket_invoice_B(nombreComprador,codigoResponsable,direccion,descuento,docum
   str_subtotal_max_len = 20
   str_subtotal = create_string_buffer( b'\000' * str_subtotal_max_len )
   error = Handle_HL.ConsultarSubTotalBrutoComprobanteActual( str_subtotal, str_subtotal_max_len )
- 
-
+  
   ID_MODIFICADOR = 200
   CODIGO_FORMA_PAGO = int(formaPago)
   CANTIDAD_CUOTAS = int(cuotas)
-  MONTO = str(float(str_subtotal.value) - float(descuento))
+  MONTO = str(float(alic['total']) - float(descuento))
   DESCRIPCION_CUPONES = ""
   DESCRIPCION = "", 
   DESCRIPCION_EXTRA1 = ""

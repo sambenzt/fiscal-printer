@@ -29,7 +29,7 @@ ID_TIPO_COMPROBANTE_TIQUE_NOTA_DE_CREDITO    = 3
 # -----------------------------------------------------------------------------
 # Function: ticket_credit_note
 # -----------------------------------------------------------------------------
-def ticket_credit_note(punto_venta,comprobante,descuento,items):
+def ticket_credit_note(punto_venta,comprobanteAsociado,descuento,items):
 
   #title 
   print "*** TICKET CREDIT NOTE ***"
@@ -64,7 +64,7 @@ def ticket_credit_note(punto_venta,comprobante,descuento,items):
 
   # load customer data
   print "Comprobante asociado  :" +  "110-" + str(punto_venta) + "-" + str(comprobanteAsociado)
-  error = Handle_HL.CargarComprobanteAsociado( "110-" + str(punto_venta) + "-" + str(comprobante) )
+  error = Handle_HL.CargarComprobanteAsociado( "110-" + str(punto_venta) + "-" + str(comprobanteAsociado) )
   print "main source voucher   : ",
   print printError(error)
 
