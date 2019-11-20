@@ -9,6 +9,7 @@ from libs.tique_nota_credito import *
 from libs.factura_a_nota_credito import *
 from libs.factura_b_nota_credito import *
 from libs.cierre_z import *
+from libs.afip import *
 
 class Printer:
 
@@ -117,5 +118,12 @@ class Printer:
     def cancelarTodo(self):
         cancel_all()
         return self.res({"status": 1 , "info": "Cancelar todo"},200)
-    
+
+    def Informe_afip(self,jsonData):
+
+        desde = jsonData['desde']
+        hasta = jsonData['hasta']
+
+        return self.res({"printer":descarga(desde,hasta)},200)
+
     

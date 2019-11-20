@@ -58,6 +58,9 @@ class Routes:
         elif jsonData['tipo'] == 'Factura B nota de credito':
             return printer.FacturaBNotaCredito(jsonData)
 
+        elif jsonData['tipo'] == 'Archivos AFIP':
+            return printer.Informe_afip(jsonData)
+
         else:
             return res('no se encontro el tipo',404)
             
