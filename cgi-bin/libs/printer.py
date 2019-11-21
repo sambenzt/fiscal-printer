@@ -126,4 +126,12 @@ class Printer:
 
         return self.res({"printer":descarga(desde,hasta)},200)
 
+    def Auditoria(self,jsonData):
+
+        tipoDetalle = jsonData['tipo_detalle']
+        desde       = jsonData['desde']
+        hasta       = jsonData['hasta']
+
+        return self.res({"printer":auditoria(tipoDetalle,desde,hasta)},200)
+
     
