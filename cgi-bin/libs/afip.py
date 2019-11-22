@@ -13,9 +13,58 @@ def descarga(desde,hasta):
   #title 
   print "*** DESCARGANDO ARCHIVOS AFIP ***"
 
-  abrirCarpeta()
+  # get handle from DLL
+  Handle_HL = windll.LoadLibrary("EpsonFiscalInterface.dll")
 
-  return { "status" : True , "desde" : desde , "hasta" : hasta, }
+  # connect
+  Handle_HL.ConfigurarVelocidad( 9600 )
+  Handle_HL.ConfigurarPuerto( PUERTO )
+  error = Handle_HL.Conectar()
+  print "Connect               : ",
+  print printError(error)
+
+  # try cancel vouchers
+  error = Handle_HL.Cancelar()
+  print "Cancel voucher        : ",
+  print printError(error)
+
+  # download 
+  carpeta_de_descarga = "donwloads"
+
+  error = Handle_HL.Descargar(str(desde), str(hasta),CARPETA_DESTINO.replace("\\","/"))
+
+  print "Download              : ",
+  resultado = printError(error)
+  print resultado
+  print error
+
+  mensaje = ""
+  if error == 2055:
+    mensaje = "PERIODO AUDITADO SIN DATOS. VERIFIQUE EL RANGO DE FECHAS"
+  
+  elif error == 2071:
+    mensaje = "FALTA DESCARGAR JORNADAS PREVIAS. REALICE UNA DESCARGAGA PENDIENTE"
+
+  else:
+    mensaje = "REPORTES DESCARGADOS"
+    abrirCarpeta()
+
+
+  # disconect
+  error = Handle_HL.Desconectar()
+  print "Disconect             : ",
+  print printError(error)
+
+  return { "resultado" : mensaje }
+
+
+# -----------------------------------------------------------------------------
+# Function: audit
+# -----------------------------------------------------------------------------
+
+def descarga_periodo_pendiente():
+   #title 
+  print "*** DESCARGANDO ARCHIVOS AFIP DEL PERIODO PENDIENTE ***"
 
   # get handle from DLL
   Handle_HL = windll.LoadLibrary("EpsonFiscalInterface.dll")
@@ -35,20 +84,25 @@ def descarga(desde,hasta):
   # download 
   carpeta_de_descarga = "donwloads"
 
-  error = Handle_HL.Descargar(str(desde), str(hasta),CARPETA_DESTINO)
+  error = Handle_HL.DescargarPeriodoPendiente(CARPETA_DESTINO.replace("\\","/"))
   print "Download              : ",
-  print printError(error)
+  resultado = printError(error)
+  print resultado
+  print error
+
+  mensaje = ""
+  if error == 83886161:
+    mensaje = "NO EXISTE RANGO DE PERIODO DISPONIBLE PARA DESCARGAR"
+  else:
+    abrirCarpeta()
+    mensaje = "REPORTES DESCARGADOS"
 
   # disconect
   error = Handle_HL.Desconectar()
   print "Disconect             : ",
   print printError(error)
 
-  return { "status" : True , "desde" : desde , "hasta" : hasta }
-
-# -----------------------------------------------------------------------------
-# Function: audit
-# -----------------------------------------------------------------------------
+  return { "resultado" : mensaje }
 
 def auditoria(TipoDetalle,desde,hasta):
 
@@ -57,8 +111,6 @@ def auditoria(TipoDetalle,desde,hasta):
 
   #title 
   print "*** AUDIT ***"
-
-  return { "status" : True , "desde" : desde , "hasta" : hasta, "tipo_detalle" : TipoDetalle}
 
   # get handle from DLL
   Handle_HL = windll.LoadLibrary("EpsonFiscalInterface.dll")
@@ -85,6 +137,7 @@ def auditoria(TipoDetalle,desde,hasta):
   print "Disconect             : ",
   print printError(error)
 
+  return { "status" : True , "desde" : desde , "hasta" : hasta, "tipo_detalle" : TipoDetalle}
 
 # -----------------------------------------------------------------------------
 # Function: printError

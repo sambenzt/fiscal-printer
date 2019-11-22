@@ -126,6 +126,10 @@ class Printer:
 
         return self.res({"printer":descarga(desde,hasta)},200)
 
+    def Periodo_pendiente(self,jsonData):
+
+        return self.res({"printer":descarga_periodo_pendiente()},200)
+
     def Auditoria(self,jsonData):
 
         tipoDetalle = jsonData['tipo_detalle']

@@ -61,6 +61,9 @@ class Routes:
         elif jsonData['tipo'] == 'Archivos AFIP':
             return printer.Informe_afip(jsonData)
 
+        elif jsonData['tipo'] == 'Archivos AFIP Periodo Pendiente':
+            return printer.Periodo_pendiente(jsonData)
+
         elif jsonData['tipo'] == 'Auditoria':
             return printer.Auditoria(jsonData)
 
