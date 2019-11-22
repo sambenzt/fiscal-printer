@@ -129,7 +129,7 @@ def auditoria(TipoDetalle,desde,hasta):
 
   # audit 
   error = Handle_HL.ImprimirAuditoria( int(TipoDetalle),str(desde),str(hasta))
-  print "Audit Detail         : ",
+  print "Audit Detail          : ",
   print printError(error)
 
   # disconect
