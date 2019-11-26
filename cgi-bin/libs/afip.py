@@ -6,7 +6,7 @@ import os
 
 PUERTO = '0'
 
-CARPETA_DESTINO = os.getcwd() + "\libs\downloads"
+CARPETA_DESTINO = "C:\downloads" 
 
 def descarga(desde,hasta):
 
