@@ -210,8 +210,8 @@ def alicuotas(items,descuento,consola):
     gravado_1050_dto = importe_1050 - descuento_1050
     gravado_2100_dto = importe_2100 - descuento_2100
     alicuota_0000    = round(gravado_0000_dto * 0/100,2)
-    alicuota_2100    = round(gravado_2100_dto * 21/100,2)
-    alicuota_1050    = round(gravado_1050_dto * 10.5/100,2)
+    alicuota_2100    = round((gravado_2100_dto / 1.21)  * 0.21,2)
+    alicuota_1050    = round((gravado_1050_dto / 1.105) * 0.105,2)
     gravado_0000_dto = gravado_0000_dto - alicuota_0000
     gravado_1050_dto = gravado_1050_dto - alicuota_1050
     gravado_2100_dto = gravado_2100_dto - alicuota_2100
